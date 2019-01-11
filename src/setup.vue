@@ -50,4 +50,7 @@ export default {
 .container {
   flex: 1;
 }
+.wrapper {
+  width: 100%;
+}
 </style>
