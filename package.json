@@ -8,12 +8,17 @@
   },
   "dependencies": {
     "expo": "^27.0.1",
+    "firebase": "^5.8.0",
+    "md5": "^2.2.1",
     "native-base": "^2.7.2",
     "react": "16.3.1",
     "react-native": "0.55.4",
+    "react-native-firebase": "^5.2.0",
     "react-native-vector-icons": "^6.1.0",
     "vue-native-core": "0.0.8",
-    "vue-native-helper": "0.0.9"
+    "vue-native-helper": "0.0.9",
+    "vue-native-router": "^0.0.1-alpha.3",
+    "vuelidate": "^0.7.4"
   },
   "devDependencies": {
     "babel-preset-expo": "^5.0.0",
