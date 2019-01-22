@@ -19,12 +19,13 @@ import ChattingHome from './screens/chatting/home.vue'
 
 const Drawer = DrawerNavigator(
   {
+
     Home: { screen: HomeScreen },
     Profile: { screen: UserProfile },
-    Chatting: { screen: ChattingHome },
+    Chatting: { screen: ChattingHome }
   },
   {
-    initialRouteName: 'Home',
+    initialRouteName: 'Chatting',
     // contentComponent: CustomDrawerNavigator
   }
 )
