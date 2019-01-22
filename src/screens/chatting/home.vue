@@ -3,7 +3,7 @@
     <nb-header>
       <nb-body>
         <nb-title>
-          User Chat
+          Messages
         </nb-title>
       </nb-body>
     </nb-header>
