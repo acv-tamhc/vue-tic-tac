@@ -41,7 +41,7 @@ import { Toast } from 'native-base'
 import { required, email } from 'vuelidate/lib/validators'
 import md5 from 'md5'
 import firebase from '../../database/firebase'
-// import store from '../store'
+import { store } from '../../store/store'
 
 export default {
   props: {
@@ -65,7 +65,7 @@ export default {
       loaded: false,
       logging_in: false,
       userRef: firebase.database().ref('users'),
-      users: {}
+      storeState: store.state
     }
   },
   created() {
@@ -88,8 +88,9 @@ export default {
                     snapshot.forEach(function(childSnapshot) {
                       let user = childSnapshot.val()
                       if (email === user.email &&  password === user.password) {
-                        AsyncStorage.setItem('email', email)
                         this.loaded = true
+                        store.updateUser({...user, ...{ id: childSnapshot.key }})
+                        AsyncStorage.setItem('email', email)
                         this.navigation.navigate('Home')
                       }
                     })
