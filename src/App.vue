@@ -12,17 +12,20 @@ import { StackNavigator, DrawerNavigator, navigationService } from 'vue-native-r
 // validator
 import Vuelidate from 'vuelidate'
 // screen
-import HomeScreen from './screens/home/home.vue'
 import UserSignin from './screens/users/signin.vue'
+import HomeScreen from './screens/home/home.vue'
 import UserProfile from './screens/users/profile.vue'
+import ChattingHome from './screens/chatting/home.vue'
 
 const Drawer = DrawerNavigator(
   {
+
     Home: { screen: HomeScreen },
     Profile: { screen: UserProfile },
+    Chatting: { screen: ChattingHome }
   },
   {
-    initialRouteName: 'Home',
+    initialRouteName: 'Chatting',
     // contentComponent: CustomDrawerNavigator
   }
 )
