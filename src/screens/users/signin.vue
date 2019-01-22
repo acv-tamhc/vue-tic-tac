@@ -60,7 +60,7 @@ export default {
   },
   data: function() {
     return {
-      emailValue: 'admin',
+      emailValue: 'admin@mail.com',
       password: 'admin',
       loaded: false,
       logging_in: false,
@@ -70,7 +70,7 @@ export default {
   },
   created() {
     this.loaded = true
-    AsyncStorage.getItem('email').then((value) => {
+    AsyncStorage.getItem('userId').then((value) => {
       if (value) {
         this.navigation.navigate('Home')
         this.loaded = false
@@ -89,8 +89,9 @@ export default {
                       let user = childSnapshot.val()
                       if (email === user.email &&  password === user.password) {
                         this.loaded = true
-                        store.updateUser({...user, ...{ id: childSnapshot.key }})
-                        AsyncStorage.setItem('email', email)
+                        user = {...user, ...{ id: childSnapshot.key }}
+                        store.updateUser(user)
+                        AsyncStorage.setItem('userId', user.id)
                         this.navigation.navigate('Home')
                       }
                     })

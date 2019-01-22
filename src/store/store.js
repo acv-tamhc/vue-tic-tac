@@ -2,7 +2,8 @@ import firebase from '../database/firebase'
 export const store = {
   state: {
     userCurrent: {},
-    messages: []
+    messages: [],
+    userChat: ''
   },
   updateUser(user) {
     this.userCurrent = user

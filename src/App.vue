@@ -16,16 +16,18 @@ import UserSignin from './screens/users/signin.vue'
 import HomeScreen from './screens/home/home.vue'
 import UserProfile from './screens/users/profile.vue'
 import ChattingHome from './screens/chatting/home.vue'
+import ChattingMessage from './screens/chatting/message.vue'
 
 const Drawer = DrawerNavigator(
   {
 
     Home: { screen: HomeScreen },
     Profile: { screen: UserProfile },
-    Chatting: { screen: ChattingHome }
+    Chatting: { screen: ChattingHome },
+    Message: { screen: ChattingMessage }
   },
   {
-    initialRouteName: 'Chatting',
+    initialRouteName: 'Home',
     // contentComponent: CustomDrawerNavigator
   }
 )
@@ -42,6 +44,11 @@ const AppNavigation = StackNavigator(
 )
 Vue.use(Vuelidate)
 export default {
-  components: { Root, AppNavigation, SafeAreaView }
+  components: { Root, AppNavigation, SafeAreaView },
+  props: {
+    navigation: {
+      type: Object
+    }
+  },
 }
 </script>
