@@ -25,7 +25,6 @@
 import { Toast, Icon } from 'native-base'
 import { AsyncStorage } from 'react-native'
 import { StackNavigator } from 'vue-native-router'
-// import store from '../store'
 
 export default {
   props: {

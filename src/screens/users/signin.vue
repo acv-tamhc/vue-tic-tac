@@ -42,7 +42,6 @@ import { required, email } from 'vuelidate/lib/validators'
 import md5 from 'md5'
 import firebase from '../../database/firebase'
 import { store } from '../../store/store'
-// import store from '../store'
 
 export default {
   props: {
