@@ -80,7 +80,7 @@ export default {
             <Text>{this.messageOfUser(item.item.id)}</Text>
           </Body>
           <Right>
-            <Button transparent>
+            <Button transparent onPress={() => this.sendMessages(item.item.id)}>
               <Text>View</Text>
             </Button>
           </Right>
@@ -129,6 +129,10 @@ export default {
     },
     messageOfUser(user_id) {
       return this.messages[user_id][0].message || 'message'
+    },
+    sendMessages(user_id) {
+      AsyncStorage.setItem('userChat', user_id)
+      this.navigation.navigate('Message')
     }
   }
 }
