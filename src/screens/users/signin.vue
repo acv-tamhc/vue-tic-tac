@@ -39,7 +39,6 @@ import { AsyncStorage } from 'react-native'
 import { StackNavigator } from 'vue-native-router'
 import { Toast } from 'native-base'
 import { required, email } from 'vuelidate/lib/validators'
-import md5 from 'md5'
 import { firebaseApp } from '../../database/firebase'
 import { store } from '../../store/store'
 
