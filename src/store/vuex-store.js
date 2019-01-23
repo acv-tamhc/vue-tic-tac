@@ -1,11 +1,6 @@
-export const store = {
+export const vuexStore = {
   state: {
-    userCurrent: {},
-    messages: [],
-    userChat: ''
-  },
-  updateUser(user) {
-    this.userCurrent = user
+    messages: []
   },
   sendMesssage(message, user_to) {
     let obj_message = {

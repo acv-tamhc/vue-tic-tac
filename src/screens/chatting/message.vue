@@ -46,7 +46,8 @@ import {
 } from 'native-base'
 import { Col, Row, Grid } from 'react-native-easy-grid'
 import { StackNavigator } from 'vue-native-router'
-import firebase from '../../database/firebase'
+// import functions from 'firebase-functions'
+import { firebaseApp } from '../../database/firebase'
 import { store } from '../../store/store'
 import chatPng from "../../../assets/chat.png"
 
@@ -58,9 +59,9 @@ export default {
   },
   data: function() {
     return {
-      database: firebase.database(),
-      userRef: firebase.database().ref('users'),
-      messageRef: firebase.database().ref('messages'),
+      database: firebaseApp.database(),
+      userRef: firebaseApp.database().ref('users'),
+      messageRef: firebaseApp.database().ref('messages'),
       storeState: store.state,
       chatPng: chatPng,
       styleObj:{
@@ -124,6 +125,7 @@ export default {
       messages: [],
       message: '',
       userChat: {},
+      messsages_full: [],
       height: Dimensions.get('window').height
     }
   },
@@ -131,7 +133,13 @@ export default {
     await this.loadUserId()
     let userIdChat = await this.loadUserIdChat()
     await this.loadUserChat(userIdChat)
-    await this.loadMessages()
+    // await this.loadMessages()
+  },
+  mounted() {
+    this.loadMessages()
+    // this.messageRef.on('child_changed', function(data) {
+    //   console.log('2')
+    // });
   },
   methods: {
     async loadUserIdChat() {
@@ -168,17 +176,18 @@ export default {
       let messages = []
       let messageSent = this.messageSent
       let messageReceived = this.messageReceived
+      let self = this
       await this.messageRef.orderByChild('date_created').once('value')
                     .then(snapshot => {
+                      console.log('1')
                       snapshot.forEach(function(childSnapshot) {
                         let message = childSnapshot.val()
                         if (messageSent(message) || messageReceived(message)) {
                           let type = messageReceived(message) ? 'received' : 'sent'
-                          messages.push({ ...message, ...{ type: type } })
+                          self.messages.push({ ...message, ...{ type: type } })
                         }
                       })
                     })
-      return this.messages = messages
     },
     messageSent(message) {
       return message.user_from === this.user_id
@@ -189,8 +198,6 @@ export default {
             && message.user_from === this.user_id_chart
     },
     sendMessage() {
-      // 1. add to messages array
-      // 2. recevied message
       if (this.message === '') return
       this.addDbMessage(this.message)
       this.message = ''

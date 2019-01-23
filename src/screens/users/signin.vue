@@ -40,7 +40,7 @@ import { StackNavigator } from 'vue-native-router'
 import { Toast } from 'native-base'
 import { required, email } from 'vuelidate/lib/validators'
 import md5 from 'md5'
-import firebase from '../../database/firebase'
+import { firebaseApp } from '../../database/firebase'
 import { store } from '../../store/store'
 
 export default {
@@ -64,15 +64,16 @@ export default {
       password: 'admin123',
       loaded: false,
       logging_in: false,
-      userRef: firebase.database().ref('users'),
+      userRef: firebaseApp.database().ref('users'),
       storeState: store.state
     }
   },
   created() {
     this.loaded = true
-    firebase.auth().onAuthStateChanged((user) => {
+    firebaseApp.auth().onAuthStateChanged((user) => {
       if (user != null) {
-        this.navigation.navigate('Home')
+        AsyncStorage.setItem('userId', user.uid)
+        this.navigation.navigate('Chatting')
         this.loaded = false
       } else {
         this.loaded = true
@@ -85,7 +86,7 @@ export default {
       // let password = md5(this.password)
       let password = this.password
       let hasError = false
-      await firebase.auth().signInWithEmailAndPassword(email, password).catch(function(error) {
+      await firebaseApp.auth().signInWithEmailAndPassword(email, password).catch(function(error) {
         // Handle Errors here.
         var errorCode = error.code
         var errorMessage = error.message
