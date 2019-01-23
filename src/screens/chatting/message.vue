@@ -8,21 +8,43 @@
       </nb-body>
     </nb-header>
     <nb-content padder>
-      <flat-list
-        :data="messages"
-        :render-item="(item) => renderList(item)"
-        :key-extractor="(item, index) => index.toString()"
-      />
+      <nb-grid :style="styleObj.boxContent">
+        <nb-row :size="92">
+          <flat-list
+            :data="messages"
+            :render-item="(item) => renderList(item)"
+            :key-extractor="(item, index) => index.toString()"
+          />
+        </nb-row>
+        <nb-row :size="8" :style="styleObj.boxChat">
+          <nb-item inlineLabel :style="{width: 300}">
+            <nb-input
+              style="{styleObj.input}"
+              placeholder="Write a message..."
+              underlineColorAndroid='transparent'
+              v-model="message"
+              />
+              <nb-button transparent :on-press="sendMessage">
+                <image
+                  :source="{uri:'https://png.icons8.com/small/75/ffffff/filled-sent.png'}"
+                  :style="styleObj.imageSend"
+                />
+            </nb-button>
+          </nb-item>
+        </nb-row>
+      </nb-grid>
     </nb-content>
   </nb-container>
 </template>
 <script>
 import React from 'react'
-import { AsyncStorage } from 'react-native'
+import moment from 'moment'
+import { AsyncStorage, Dimensions } from 'react-native'
 import {
   Container, Header, Content, List, ListItem, Thumbnail, Text, Left, Body, Right,
-  Button, Toast, Icon
+  Button, Toast, Icon, View
 } from 'native-base'
+import { Col, Row, Grid } from 'react-native-easy-grid'
 import { StackNavigator } from 'vue-native-router'
 import firebase from '../../database/firebase'
 import { store } from '../../store/store'
@@ -36,6 +58,7 @@ export default {
   },
   data: function() {
     return {
+      database: firebase.database(),
       userRef: firebase.database().ref('users'),
       messageRef: firebase.database().ref('messages'),
       storeState: store.state,
@@ -47,14 +70,61 @@ export default {
         nbTitle: {
           fontSize: 20,
           fontWeight: 'bold'
+        },
+        balloon: {
+          maxWidth: 250,
+          padding: 15,
+          borderRadius: 20,
+          backgroundColor: '#0f0'
+        },
+        itemIn: {
+          alignSelf: 'flex-start'
+        },
+        itemOut: {
+          alignSelf: 'flex-end'
+        },
+        input: {
+          height: 40,
+          marginLeft: 16,
+          borderBottomColor: '#FFFFFF',
+          flex: 1,
+          backgroundColor: '#0f0'
+        },
+        imageSend: {
+          width: 20,
+          height: 20
+        },
+        boxChat: {
+          borderRadius: 10,
+          backgroundColor: '#00BFFF'
+        },
+        messageReceived: {
+          backgroundColor: '#f1f1f1'
+        },
+        messageSent: {
+          backgroundColor: '#00BFFF'
+        },
+        time: {
+          alignSelf: 'flex-end',
+          margin: 15,
+          fontSize:12,
+          color:"#fff",
+          backgroundColor: '#000',
+          width: 120
+        },
+        boxContent: {
+          height: 700, /** change follow percent app */
+          // backgroundColor: '#00f'
         }
       },
       user_id: '',
       user_id_chart: '',
       user_to: [],
       users: [],
-      messages: {},
-      userChat: {}
+      messages: [],
+      message: '',
+      userChat: {},
+      height: Dimensions.get('window').height
     }
   },
   async created() {
@@ -96,34 +166,65 @@ export default {
     },
     async loadMessages() {
       let messages = []
-      let messageUserFromTo = this.messageUserFromTo
-      await this.messageRef.once('value')
+      let messageSent = this.messageSent
+      let messageReceived = this.messageReceived
+      await this.messageRef.orderByChild('date_created').once('value')
                     .then(snapshot => {
                       snapshot.forEach(function(childSnapshot) {
                         let message = childSnapshot.val()
-                        if (messageUserFromTo(message)) {
-                          messages.push(message)
+                        if (messageSent(message) || messageReceived(message)) {
+                          let type = messageReceived(message) ? 'received' : 'sent'
+                          messages.push({ ...message, ...{ type: type } })
                         }
                       })
                     })
       return this.messages = messages
     },
-    messageUserFromTo(message) {
+    messageSent(message) {
       return message.user_from === this.user_id
             && message.user_to === this.user_id_chart
     },
-    renderList: function(item) {
-      return (
-        <ListItem thumbnail>
-          <Left>
-            <Thumbnail source={chatPng} />
-          </Left>
-          <Body>
-            <Text>{item.item.message}</Text>
-          </Body>
-        </ListItem>
-      )
+    messageReceived(message) {
+      return message.user_to === this.user_id
+            && message.user_from === this.user_id_chart
     },
+    sendMessage() {
+      // 1. add to messages array
+      // 2. recevied message
+      if (this.message === '') return
+      this.addDbMessage(this.message)
+      this.message = ''
+    },
+    addDbMessage(message, user_to) {
+      let messageObj = {
+        message: message,
+        type: 'sent',
+        user_to: this.user_id_chart,
+        user_from : this.user_id,
+        date_created: moment().format('YYYY-MM-DD H:mm:ss')
+      }
+      this.messages.push(messageObj)
+      this.database.ref('messages/' + this.setAutoTimeId()).set(messageObj)
+    },
+    setAutoTimeId() {
+      return (new Date()).getTime()
+    },
+    renderList: function(item) {
+      let inMessage = item.item.type === 'sent'
+      let itemStyle = inMessage ? this.styleObj.itemIn : this.styleObj.itemOut
+      let messageStyle = inMessage ? this.styleObj.messageSent : this.styleObj.messageReceived
+      let formatDate = this.formatDate
+      return (
+        <View style={[itemStyle]}>
+          <Text style={this.styleObj.time}>
+            {item.item.date_created}
+          </Text>
+          <View style={[this.styleObj.balloon, messageStyle]}>
+            <Text>{item.item.message}</Text>
+          </View>
+        </View>
+      )
+    }
   }
 }
 </script>
