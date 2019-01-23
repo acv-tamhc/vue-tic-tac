@@ -6,13 +6,18 @@
           <nb-card-item :style="styleObj.nbCard">
               <nb-left>
                 <nb-thumbnail :source="chatPng"></nb-thumbnail>
-                <nb-text :style="styleObj.nbTitle">Chat</nb-text>
+                <nb-text note :style="styleObj.nbTitle">Chat</nb-text>
               </nb-left>
           </nb-card-item>
         </nb-title>
       </nb-body>
     </nb-header>
     <nb-content padder>
+      <nb-item>
+        <nb-icon active name="search" />
+        <nb-input placeholder="Search" />
+        <nb-icon active name="people" />
+      </nb-item>
       <flat-list
         :data="users"
         :render-item="(item) => renderList(item)"
