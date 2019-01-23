@@ -11,6 +11,7 @@
       <nb-grid :style="styleObj.boxContent">
         <nb-row :size="92">
           <flat-list
+            :refreshing="isFetching"
             :data="messages"
             :render-item="(item) => renderList(item)"
             :key-extractor="(item, index) => index.toString()"
@@ -42,11 +43,11 @@ import moment from 'moment'
 import { AsyncStorage, Dimensions } from 'react-native'
 import {
   Container, Header, Content, List, ListItem, Thumbnail, Text, Left, Body, Right,
-  Button, Toast, Icon, View
+  Button, Toast, Icon, View, RefreshControl
 } from 'native-base'
 import { Col, Row, Grid } from 'react-native-easy-grid'
 import { StackNavigator } from 'vue-native-router'
-import firebase from '../../database/firebase'
+import { firebaseApp } from '../../database/firebase'
 import { store } from '../../store/store'
 import chatPng from "../../../assets/chat.png"
 
@@ -58,9 +59,9 @@ export default {
   },
   data: function() {
     return {
-      database: firebase.database(),
-      userRef: firebase.database().ref('users'),
-      messageRef: firebase.database().ref('messages'),
+      database: firebaseApp.database(),
+      userRef: firebaseApp.database().ref('users'),
+      messageRef: firebaseApp.database().ref('messages'),
       storeState: store.state,
       chatPng: chatPng,
       styleObj:{
@@ -113,8 +114,7 @@ export default {
           width: 120
         },
         boxContent: {
-          height: 700, /** change follow percent app */
-          // backgroundColor: '#00f'
+          height: 700
         }
       },
       user_id: '',
@@ -124,6 +124,7 @@ export default {
       messages: [],
       message: '',
       userChat: {},
+      isFetching: false,
       height: Dimensions.get('window').height
     }
   },
@@ -131,7 +132,7 @@ export default {
     await this.loadUserId()
     let userIdChat = await this.loadUserIdChat()
     await this.loadUserChat(userIdChat)
-    await this.loadMessages()
+    this.loadMessages()
   },
   methods: {
     async loadUserIdChat() {
@@ -168,17 +169,17 @@ export default {
       let messages = []
       let messageSent = this.messageSent
       let messageReceived = this.messageReceived
-      await this.messageRef.orderByChild('date_created').once('value')
-                    .then(snapshot => {
-                      snapshot.forEach(function(childSnapshot) {
-                        let message = childSnapshot.val()
-                        if (messageSent(message) || messageReceived(message)) {
-                          let type = messageReceived(message) ? 'received' : 'sent'
-                          messages.push({ ...message, ...{ type: type } })
-                        }
-                      })
-                    })
-      return this.messages = messages
+      let _this = this
+      await this.messageRef.orderByChild('date_created').on('value', (snapshot) => {
+        snapshot.forEach(function(childSnapshot) {
+          let message = childSnapshot.val()
+          if (messageSent(message) || messageReceived(message)) {
+            let type = messageReceived(message) ? 'received' : 'sent'
+            _this.messages.push({ ...message, ...{ type: type } })
+          }
+          _this.isFetching = true
+        })
+      })
     },
     messageSent(message) {
       return message.user_from === this.user_id
@@ -189,8 +190,6 @@ export default {
             && message.user_from === this.user_id_chart
     },
     sendMessage() {
-      // 1. add to messages array
-      // 2. recevied message
       if (this.message === '') return
       this.addDbMessage(this.message)
       this.message = ''

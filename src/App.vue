@@ -13,6 +13,7 @@ import { StackNavigator, DrawerNavigator, navigationService } from 'vue-native-r
 import Vuelidate from 'vuelidate'
 // screen
 import UserSignin from './screens/users/signin.vue'
+import UserSignout from './screens/users/signout.vue'
 import HomeScreen from './screens/home/home.vue'
 import UserProfile from './screens/users/profile.vue'
 import ChattingHome from './screens/chatting/home.vue'
@@ -24,7 +25,8 @@ const Drawer = DrawerNavigator(
     Home: { screen: HomeScreen },
     Profile: { screen: UserProfile },
     Chatting: { screen: ChattingHome },
-    Message: { screen: ChattingMessage }
+    Message: { screen: ChattingMessage },
+    Signout: { screen: UserSignout }
   },
   {
     initialRouteName: 'Home',

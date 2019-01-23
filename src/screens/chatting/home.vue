@@ -34,7 +34,7 @@ import {
   Button, Toast, Icon
 } from 'native-base'
 import { StackNavigator } from 'vue-native-router'
-import firebase from '../../database/firebase'
+import { firebaseApp } from '../../database/firebase'
 import { store } from '../../store/store'
 import chatPng from "../../../assets/chat.png"
 
@@ -46,8 +46,8 @@ export default {
   },
   data: function() {
     return {
-      userRef: firebase.database().ref('users'),
-      messageRef: firebase.database().ref('messages'),
+      userRef: firebaseApp.database().ref('users'),
+      messageRef: firebaseApp.database().ref('messages'),
       storeState: store.state,
       chatPng: chatPng,
       styleObj:{

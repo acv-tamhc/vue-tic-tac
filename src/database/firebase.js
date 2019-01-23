@@ -1,4 +1,4 @@
-import firebase from 'firebase'
+import * as firebase from 'firebase'
 const CONFIG = {
   apiKey: 'AIzaSyDXM1huEl55trlVd9TNEsClql6CQAfrV1g',
   authDomain: 'vue-tic-tac.firebaseapp.com',
@@ -7,5 +7,4 @@ const CONFIG = {
   storageBucket: 'vue-tic-tac.appspot.com',
   messagingSenderId: '470795417656'
 }
-firebase.initializeApp(CONFIG)
-export default firebase
+export const firebaseApp = firebase.initializeApp(CONFIG)

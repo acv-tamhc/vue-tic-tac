@@ -1,4 +1,3 @@
-import firebase from '../database/firebase'
 export const store = {
   state: {
     userCurrent: {},

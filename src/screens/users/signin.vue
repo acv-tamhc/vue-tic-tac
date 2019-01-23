@@ -39,8 +39,7 @@ import { AsyncStorage } from 'react-native'
 import { StackNavigator } from 'vue-native-router'
 import { Toast } from 'native-base'
 import { required, email } from 'vuelidate/lib/validators'
-import md5 from 'md5'
-import firebase from '../../database/firebase'
+import { firebaseApp } from '../../database/firebase'
 import { store } from '../../store/store'
 
 export default {
@@ -61,19 +60,19 @@ export default {
   data: function() {
     return {
       emailValue: 'admin@mail.com',
-      password: 'admin',
+      password: 'admin123',
       loaded: false,
       logging_in: false,
-      userRef: firebase.database().ref('users'),
+      userRef: firebaseApp.database().ref('users'),
       storeState: store.state
     }
   },
   created() {
     this.loaded = true
-    // AsyncStorage.removeItem('userId')
-    AsyncStorage.getItem('userId').then((value) => {
-      if (value) {
-        this.navigation.navigate('Home')
+    firebaseApp.auth().onAuthStateChanged((user) => {
+      if (user != null) {
+        AsyncStorage.setItem('userId', user.uid)
+        this.navigation.navigate('Chatting')
         this.loaded = false
       } else {
         this.loaded = true
@@ -81,23 +80,18 @@ export default {
     })
   },
   methods: {
-    login() {
+    async login() {
       let email = this.emailValue
-      let password = md5(this.password)
-      this.userRef.orderByKey().once('value')
-                  .then(snapshot => {
-                    snapshot.forEach(function(childSnapshot) {
-                      let user = childSnapshot.val()
-                      if (email === user.email &&  password === user.password) {
-                        this.loaded = true
-                        user = {...user, ...{ id: childSnapshot.key }}
-                        store.updateUser(user)
-                        AsyncStorage.setItem('userId', user.id)
-                        this.navigation.navigate('Home')
-                      }
-                    })
-                  })
-    },
+      // let password = md5(this.password)
+      let password = this.password
+      let hasError = false
+      await firebaseApp.auth().signInWithEmailAndPassword(email, password).catch(function(error) {
+        // Handle Errors here.
+        var errorCode = error.code
+        var errorMessage = error.message
+        this.refs.toast.show(<View><Text>{errorMessage}</Text></View>)
+      });
+    }
   }
 }
 </script>
