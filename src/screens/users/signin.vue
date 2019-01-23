@@ -61,7 +61,7 @@ export default {
   data: function() {
     return {
       emailValue: 'admin@mail.com',
-      password: 'admin',
+      password: 'admin123',
       loaded: false,
       logging_in: false,
       userRef: firebase.database().ref('users'),
@@ -70,9 +70,8 @@ export default {
   },
   created() {
     this.loaded = true
-    // AsyncStorage.removeItem('userId')
-    AsyncStorage.getItem('userId').then((value) => {
-      if (value) {
+    firebase.auth().onAuthStateChanged((user) => {
+      if (user != null) {
         this.navigation.navigate('Home')
         this.loaded = false
       } else {
@@ -81,23 +80,18 @@ export default {
     })
   },
   methods: {
-    login() {
+    async login() {
       let email = this.emailValue
-      let password = md5(this.password)
-      this.userRef.orderByKey().once('value')
-                  .then(snapshot => {
-                    snapshot.forEach(function(childSnapshot) {
-                      let user = childSnapshot.val()
-                      if (email === user.email &&  password === user.password) {
-                        this.loaded = true
-                        user = {...user, ...{ id: childSnapshot.key }}
-                        store.updateUser(user)
-                        AsyncStorage.setItem('userId', user.id)
-                        this.navigation.navigate('Home')
-                      }
-                    })
-                  })
-    },
+      // let password = md5(this.password)
+      let password = this.password
+      let hasError = false
+      await firebase.auth().signInWithEmailAndPassword(email, password).catch(function(error) {
+        // Handle Errors here.
+        var errorCode = error.code
+        var errorMessage = error.message
+        this.refs.toast.show(<View><Text>{errorMessage}</Text></View>)
+      });
+    }
   }
 }
 </script>
