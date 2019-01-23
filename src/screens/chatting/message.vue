@@ -17,7 +17,7 @@
           />
         </nb-row>
         <nb-row :size="8" :style="styleObj.boxChat">
-          <nb-item inlineLabel :style="{width: 350}">
+          <nb-item inlineLabel :style="{width: 300}">
             <nb-input
               style="{styleObj.input}"
               placeholder="Write a message..."
@@ -38,6 +38,7 @@
 </template>
 <script>
 import React from 'react'
+import moment from 'moment'
 import { AsyncStorage, Dimensions } from 'react-native'
 import {
   Container, Header, Content, List, ListItem, Thumbnail, Text, Left, Body, Right,
@@ -57,6 +58,7 @@ export default {
   },
   data: function() {
     return {
+      database: firebase.database(),
       userRef: firebase.database().ref('users'),
       messageRef: firebase.database().ref('messages'),
       storeState: store.state,
@@ -101,6 +103,14 @@ export default {
         },
         messageSent: {
           backgroundColor: '#00BFFF'
+        },
+        time: {
+          alignSelf: 'flex-end',
+          margin: 15,
+          fontSize:12,
+          color:"#fff",
+          backgroundColor: '#000',
+          width: 120
         },
         boxContent: {
           height: 700, /** change follow percent app */
@@ -158,11 +168,11 @@ export default {
       let messages = []
       let messageSent = this.messageSent
       let messageReceived = this.messageReceived
-      await this.messageRef.once('value')
+      await this.messageRef.orderByChild('date_created').once('value')
                     .then(snapshot => {
                       snapshot.forEach(function(childSnapshot) {
                         let message = childSnapshot.val()
-                        if (messageSent(message) || messageReceived(message) ) {
+                        if (messageSent(message) || messageReceived(message)) {
                           let type = messageReceived(message) ? 'received' : 'sent'
                           messages.push({ ...message, ...{ type: type } })
                         }
@@ -178,20 +188,42 @@ export default {
       return message.user_to === this.user_id
             && message.user_from === this.user_id_chart
     },
+    sendMessage() {
+      // 1. add to messages array
+      // 2. recevied message
+      if (this.message === '') return
+      this.addDbMessage(this.message)
+      this.message = ''
+    },
+    addDbMessage(message, user_to) {
+      let messageObj = {
+        message: message,
+        type: 'sent',
+        user_to: this.user_id_chart,
+        user_from : this.user_id,
+        date_created: moment().format('YYYY-MM-DD H:mm:ss')
+      }
+      this.messages.push(messageObj)
+      this.database.ref('messages/' + this.setAutoTimeId()).set(messageObj)
+    },
+    setAutoTimeId() {
+      return (new Date()).getTime()
+    },
     renderList: function(item) {
-      let inMessage = item.item.type === 'sent'// messages left or right
+      let inMessage = item.item.type === 'sent'
       let itemStyle = inMessage ? this.styleObj.itemIn : this.styleObj.itemOut
       let messageStyle = inMessage ? this.styleObj.messageSent : this.styleObj.messageReceived
+      let formatDate = this.formatDate
       return (
         <View style={[itemStyle]}>
+          <Text style={this.styleObj.time}>
+            {item.item.date_created}
+          </Text>
           <View style={[this.styleObj.balloon, messageStyle]}>
             <Text>{item.item.message}</Text>
           </View>
         </View>
       )
-    },
-    sendMessage() {
-      console.log('send message')
     }
   }
 }

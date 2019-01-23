@@ -70,6 +70,7 @@ export default {
   },
   created() {
     this.loaded = true
+    // AsyncStorage.removeItem('userId')
     AsyncStorage.getItem('userId').then((value) => {
       if (value) {
         this.navigation.navigate('Home')
