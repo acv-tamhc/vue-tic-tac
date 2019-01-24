@@ -12,7 +12,8 @@
         <nb-row :size="92">
           <flat-list
             :refreshing="isFetching"
-            :data="messages"
+            :on-refresh="() => loadMessages()"
+            :data="Object.values(messages)"
             :render-item="(item) => renderList(item)"
             :key-extractor="(item, index) => index.toString()"
           />
@@ -76,7 +77,8 @@ export default {
           maxWidth: 250,
           padding: 15,
           borderRadius: 20,
-          backgroundColor: '#0f0'
+          backgroundColor: '#0f0',
+          marginBottom: 2
         },
         itemIn: {
           alignSelf: 'flex-start'
@@ -117,14 +119,15 @@ export default {
           height: 700
         }
       },
-      user_id: '',
-      user_id_chart: '',
+      userId: '',
+      userIdChart: '',
       user_to: [],
       users: [],
-      messages: [],
+      messages: {},
       message: '',
       userChat: {},
       isFetching: false,
+      showTimeofMessage: true,
       height: Dimensions.get('window').height
     }
   },
@@ -136,29 +139,29 @@ export default {
   },
   methods: {
     async loadUserIdChat() {
-      let user_id = ''
+      let userId = ''
       await AsyncStorage.getItem('userChat').then((value) => {
         if (value) {
-          user_id = value
+          userId = value
         }
       })
-      return this.user_id = user_id
+      return this.userId = userId
     },
     async loadUserId() {
-      let user_id = ''
+      let userId = ''
       await AsyncStorage.getItem('userId').then((value) => {
         if (value) {
-          user_id = value
+          userId = value
         }
       })
-      return this.user_id_chart = user_id
+      return this.userIdChart = userId
     },
-    async loadUserChat(user_id) {
+    async loadUserChat(userId) {
       let user = {}
       await this.userRef.orderByKey().once('value')
                         .then(snapshot => {
                           snapshot.forEach(function(childSnapshot) {
-                            if (user_id === childSnapshot.key) {
+                            if (userId === childSnapshot.key) {
                               user = childSnapshot.val()
                             }
                           })
@@ -166,28 +169,25 @@ export default {
       return this.userChat = user
     },
     async loadMessages() {
-      let messages = []
-      let messageSent = this.messageSent
-      let messageReceived = this.messageReceived
       let _this = this
       await this.messageRef.orderByChild('date_created').on('value', (snapshot) => {
         snapshot.forEach(function(childSnapshot) {
           let message = childSnapshot.val()
-          if (messageSent(message) || messageReceived(message)) {
-            let type = messageReceived(message) ? 'received' : 'sent'
-            _this.messages.push({ ...message, ...{ type: type } })
+          if (_this.messageSent(message) || _this.messageReceived(message)) {
+            let type = _this.messageReceived(message) ? 'received' : 'sent'
+            _this.messages[childSnapshot.key] = { ...message, ...{ type: type } }
           }
           _this.isFetching = true
         })
       })
     },
     messageSent(message) {
-      return message.user_from === this.user_id
-            && message.user_to === this.user_id_chart
+      return message.user_from === this.userId
+            && message.user_to === this.userIdChart
     },
     messageReceived(message) {
-      return message.user_to === this.user_id
-            && message.user_from === this.user_id_chart
+      return message.user_to === this.userId
+            && message.user_from === this.userIdChart
     },
     sendMessage() {
       if (this.message === '') return
@@ -198,11 +198,11 @@ export default {
       let messageObj = {
         message: message,
         type: 'sent',
-        user_to: this.user_id_chart,
-        user_from : this.user_id,
+        user_to: this.userIdChart,
+        user_from : this.userId,
         date_created: moment().format('YYYY-MM-DD H:mm:ss')
       }
-      this.messages.push(messageObj)
+      this.messages[this.setAutoTimeId()] = messageObj
       this.database.ref('messages/' + this.setAutoTimeId()).set(messageObj)
     },
     setAutoTimeId() {
@@ -212,14 +212,10 @@ export default {
       let inMessage = item.item.type === 'sent'
       let itemStyle = inMessage ? this.styleObj.itemIn : this.styleObj.itemOut
       let messageStyle = inMessage ? this.styleObj.messageSent : this.styleObj.messageReceived
-      let formatDate = this.formatDate
       return (
         <View style={[itemStyle]}>
-          <Text style={this.styleObj.time}>
-            {item.item.date_created}
-          </Text>
-          <View style={[this.styleObj.balloon, messageStyle]}>
-            <Text>{item.item.message}</Text>
+          <View style={[this.styleObj.balloon, messageStyle]} >
+            <Text onPress={() => {this.showTimeofMessage=true}}>{item.item.message}</Text>
           </View>
         </View>
       )
