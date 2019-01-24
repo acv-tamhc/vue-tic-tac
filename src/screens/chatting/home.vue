@@ -123,7 +123,7 @@ export default {
       await this.userRef.orderByKey().on('value', snapshot => {
                           snapshot.forEach(function(childSnapshot) {
                             let user = childSnapshot.val()
-                            if (_this.user_to.includes(childSnapshot.key) && user !== _this.userIdCurrent) {
+                            if (_this.user_to.includes(childSnapshot.key) && childSnapshot.key !== _this.userIdCurrent) {
                               _this.users.push({ ...user, ...{ id: childSnapshot.key }})
                             }
                           })

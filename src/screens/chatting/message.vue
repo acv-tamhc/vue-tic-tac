@@ -1,11 +1,17 @@
 <template>
   <nb-container :style="{backgroundColor: '#fff'}">
     <nb-header>
+      <nb-left>
+        <nb-button transparent :on-press={() => this.navigation.goBack()}>
+          <nb-icon name="arrow-back"></nb-icon>
+        </nb-button>
+      </nb-left>
       <nb-body>
         <nb-title>
           {{userChat.name}}
         </nb-title>
       </nb-body>
+      <nb-right></nb-right>
     </nb-header>
     <nb-content padder>
       <nb-grid :style="styleObj.boxContent">
