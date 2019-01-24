@@ -199,7 +199,6 @@ export default {
     sendMessage() {
       if (this.message === '') return
       this.addDbMessage(this.message)
-      this.message = ''
     },
     addDbMessage(message, user_to) {
       let messageObj = {
@@ -211,6 +210,7 @@ export default {
       }
       this.messages[this.setAutoTimeId()] = messageObj
       this.database.ref('messages/' + this.setAutoTimeId()).set(messageObj)
+      this.message = ''
     },
     setAutoTimeId() {
       return (new Date()).getTime()

@@ -149,7 +149,6 @@ export default {
                     })
     },
     messageOfUser(user_id) {
-      // return true
       return Object.values(this.messages).reverse().find(message => message.user_to === user_id).message
     },
     sendMessages(user_id) {
