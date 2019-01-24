@@ -24,6 +24,22 @@
         :key-extractor="(item, index) => index.toString()"
       />
     </nb-content>
+    <nb-footer>
+      <nb-footer-tab>
+        <nb-button>
+          <nb-icon name="home" />
+        </nb-button>
+        <nb-button>
+          <nb-icon name="chatbubbles" />
+        </nb-button>
+        <nb-button :active="true">
+          <nb-icon name="home" />
+        </nb-button>
+        <nb-button>
+          <nb-icon name="contact" />
+        </nb-button>
+      </nb-footer-tab>
+    </nb-footer>
   </nb-container>
 </template>
 <script>
@@ -61,15 +77,25 @@ export default {
       },
       user_to: [],
       users: [],
-      messages: {}
+      messages: {},
+      userIdCurrent: ''
     }
   },
   async created() {
+    await this.loadUserId()
     let user_to = await this.loadListFriends()
     await this.loadMessages()
-    this.loadUsers(user_to)
+    await this.loadUsers(user_to)
   },
   methods: {
+    async loadUserId() {
+      let _this = this
+      await AsyncStorage.getItem('userId').then((value) => {
+        if (value) {
+          _this.userIdCurrent = value
+        }
+      })
+    },
     openDrawerMenu() {
       this.navigation.navigate('Home')
     },
@@ -93,47 +119,37 @@ export default {
       )
     },
     async loadUsers(user_to) {
-      let users = []
-      await this.userRef.orderByKey().once('value')
-                        .then(snapshot => {
+      let _this = this
+      await this.userRef.orderByKey().on('value', snapshot => {
                           snapshot.forEach(function(childSnapshot) {
                             let user = childSnapshot.val()
-                            if (user_to.includes(childSnapshot.key)) {
-                              users.push({ ...user, ...{ id: childSnapshot.key }})
+                            if (_this.user_to.includes(childSnapshot.key) && user !== _this.userIdCurrent) {
+                              _this.users.push({ ...user, ...{ id: childSnapshot.key }})
                             }
                           })
                         })
-        this.users = users
     },
     async loadListFriends() {
-      let user_to = []
-      await this.messageRef.once('value')
-                    .then(snapshot => {
+      let _this = this
+      await this.messageRef.orderByChild('date_created').on('value', snapshot => {
                       snapshot.forEach(function(childSnapshot) {
                         let message = childSnapshot.val()
-                        if (!user_to.includes(message.user_to)) {
-                          user_to.push(message.user_to)
+                        if (!_this.user_to.includes(message.user_to)) {
+                          _this.user_to.push(message.user_to)
                         }
                       })
                     })
-      return this.user_to = user_to
     },
     async loadMessages() {
-      let this_messages = this.messages
-      await this.messageRef.once('value')
-                    .then(snapshot => {
+      let _this = this
+      await this.messageRef.orderByChild('date_created').on('value', snapshot => {
                       snapshot.forEach(function(childSnapshot) {
-                        let message = childSnapshot.val()
-                        let messages = []
-                        if (messages.includes(message.user_to)) { messages =  this_messages[message.user_to] }
-                        messages.push(message)
-                        this_messages[message.user_to] = messages
+                        _this.messages[childSnapshot.key] = childSnapshot.val()
                       })
                     })
-      return this.messages = this_messages
     },
     messageOfUser(user_id) {
-      return this.messages[user_id][0].message || 'message'
+      return Object.values(this.messages).reverse().find(message => message.user_to === user_id).message
     },
     sendMessages(user_id) {
       AsyncStorage.setItem('userChat', user_id)
