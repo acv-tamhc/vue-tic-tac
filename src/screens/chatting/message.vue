@@ -178,12 +178,13 @@ export default {
       let _this = this
       await this.messageRef.orderByChild('date_created').on('value', (snapshot) => {
         snapshot.forEach(function(childSnapshot) {
+          _this.isFetching = true
           let message = childSnapshot.val()
           if (_this.messageSent(message) || _this.messageReceived(message)) {
             let type = _this.messageReceived(message) ? 'received' : 'sent'
             _this.messages[childSnapshot.key] = { ...message, ...{ type: type } }
           }
-          _this.isFetching = true
+          _this.isFetching = false
         })
       })
     },
@@ -206,7 +207,7 @@ export default {
         type: 'sent',
         user_to: this.userIdChart,
         user_from : this.userId,
-        date_created: moment().format('YYYY-MM-DD H:mm:ss')
+        date_created: (new Date()).getTime()
       }
       this.messages[this.setAutoTimeId()] = messageObj
       this.database.ref('messages/' + this.setAutoTimeId()).set(messageObj)

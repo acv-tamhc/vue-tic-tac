@@ -123,9 +123,10 @@ export default {
       await this.userRef.orderByKey().on('value', snapshot => {
                           snapshot.forEach(function(childSnapshot) {
                             let user = childSnapshot.val()
-                            if (_this.user_to.includes(childSnapshot.key) && childSnapshot.key !== _this.userIdCurrent) {
-                              _this.users.push({ ...user, ...{ id: childSnapshot.key }})
-                            }
+                            _this.users.push({ ...user, ...{ id: childSnapshot.key }})
+                            // if (_this.user_to.includes(childSnapshot.key) && childSnapshot.key !== _this.userIdCurrent) {
+                              // _this.users.push({ ...user, ...{ id: childSnapshot.key }})
+                            // }
                           })
                         })
     },
@@ -134,9 +135,10 @@ export default {
       await this.messageRef.orderByChild('date_created').on('value', snapshot => {
                       snapshot.forEach(function(childSnapshot) {
                         let message = childSnapshot.val()
-                        if (!_this.user_to.includes(message.user_to)) {
+                        _this.user_to.push(message.user_to)
+                        // if (!_this.user_to.includes(message.user_to)) {
                           _this.user_to.push(message.user_to)
-                        }
+                        // }
                       })
                     })
     },
@@ -149,7 +151,8 @@ export default {
                     })
     },
     messageOfUser(user_id) {
-      return Object.values(this.messages).reverse().find(message => message.user_to === user_id).message
+      return true
+      // return Object.values(this.messages).reverse().find(message => message.user_to === user_id).message
     },
     sendMessages(user_id) {
       AsyncStorage.setItem('userChat', user_id)
